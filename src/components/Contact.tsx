@@ -4,7 +4,7 @@ import InstagramIcon from "@/components/icons/instagram.svg";
 import GithubIcon from "@/components/icons/github.svg";
 import EmailIcon from "@/components/icons/email.svg";
 import XIcon from "@/components/icons/x.svg";
-import LinkedIcon from '@/components/icons/linkedin.svg'
+import LinkedIcon from "@/components/icons/linkedin.svg";
 import Link from "next/link";
 
 type ContactInfo = {
@@ -30,12 +30,16 @@ const contactInfo: ContactInfo[] = [
     href: "https://x.com/AshyGany",
   },
   { name: "Github", icon: GithubIcon, href: "https://github.com/cygnuxxs" },
-  {name : 'LinkedIn', icon : LinkedIcon, href : 'https://www.linkedin.com/in/ashok-atragadda/'}
+  {
+    name: "LinkedIn",
+    icon: LinkedIcon,
+    href: "https://www.linkedin.com/in/ashok-atragadda/",
+  },
 ];
 
 const Contact = () => {
   return (
-    <DotsBackground className="w-full flex items-center justify-center">
+    <DotsBackground className="w-full overflow-hidden flex items-center justify-center">
       <section
         id="contact-me"
         className="max-w-4xl h-screen relative pt-[5.5rem] grid place-content-center space-y-4 text-center"

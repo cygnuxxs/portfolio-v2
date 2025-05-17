@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const Project: React.FC<{ project: IProject }> = ({ project }) => {
+const Project: React.FC<{ project : IProject }> = ({ project }) => {
   const { title, description, image, techstack, github, preview } = project;
 
   return (

@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { Button } from "./ui/button";
 import { Download } from "lucide-react";
 import Link from "next/link";
+import SectionText from "./SectionText";
 
 const Footer: React.FC<{ resumeLink: string }> = ({ resumeLink }) => {
   const currentYear = new Date().getFullYear();
@@ -12,15 +13,7 @@ const Footer: React.FC<{ resumeLink: string }> = ({ resumeLink }) => {
   return (
     <footer className="relative gap-y-8 overflow-hidden flex flex-col justify-center items-center py-[5rem]" aria-label="Site footer">
       {/* Decorative background text */}
-      <motion.h1
-        aria-hidden="true"
-        initial={{ y: 100 }}
-        whileInView={{ y: 0 }}
-        transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
-        className="text-[18vw] -z-10 self-start absolute -bottom-[11vw] max-sm:text-[24vw] bg-gradient-to-t from-foreground/5 to-primary/5 text-transparent bg-clip-text tracking-wide font-black"
-      >
-        Cygnuxxs
-      </motion.h1>
+      <SectionText text="Cygnuxxs" />
 
       {/* Identity Section */}
       <section className="text-center">
