@@ -11,7 +11,6 @@ import PostgresSvg from "@/components/icons/postgres.svg";
 import MongoSvg from "@/components/icons/mongodb.svg";
 import NodeSvg from "@/components/icons/node.svg";
 import { GridPattern } from "./magicui/grid-pattern";
-import SectionText from "./SectionText";
 
 const skills = [
   { name: "Nextjs", image: NextSvg },
@@ -30,12 +29,11 @@ const skills = [
 const SkillsSection = () => {
   return (
     <section
-      className="min-h-[calc(100vh-7rem)] overflow-hidden relative space-y-4 items-center py-12 snap-start w-full flex flex-col justify-center"
+      className="min-h-[calc(100vh-7rem)] @container overflow-hidden relative space-y-4 items-center py-12 snap-start w-full flex flex-col justify-center"
       id="skills"
     >
       <GridPattern strokeDasharray="1 2" className="fill-primary/30 -z-10 stroke-primary/80 [mask-image:radial-gradient(90vw_circle_at_center,var(--muted),transparent)] sm:[mask-image:radial-gradient(90vh_circle_at_center,var(--muted),transparent)] md:[mask-image:radial-gradient(50vw_circle_at_center,var(--muted),transparent)] lg:[mask-image:radial-gradient(50vw_circle_at_center,var(--muted),transparent)]" />
       <h1 className="text-4xl text-center font-black max-sm:text-2xl">Skills</h1>
-      <SectionText className="bottom-[-13vw]" text="Skills" />
       <p className=" font-medium backdrop-blur-[1px] dark:bg-foreground/5 px-2 rounded-md text-base max-sm:text-sm text-foreground/70 text-center max-w-4xl">
         Showcasing My Expertise And Technical Proficiencies
       </p>

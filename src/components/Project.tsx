@@ -13,19 +13,22 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const Project: React.FC<{ project : IProject }> = ({ project }) => {
+const Project: React.FC<{ project: IProject }> = ({ project }) => {
   const { title, description, image, techstack, github, preview } = project;
 
   return (
     <DotsBackground>
-      <article className="group relative min-h-[500px] hover:scale-[102%] flex flex-col gap-4 rounded-xl border dark:border-none dark:bg-muted/50 shadow-sm p-3 transition hover:shadow-md h-full">
+      <article
+        tabIndex={0} // Enable focus to simulate hover on mobile
+        className="group relative min-h-[500px] focus:scale-[102%] hover:scale-[102%] active:scale-[102%] flex flex-col gap-4 rounded-xl border dark:border-none dark:bg-muted/50 shadow-sm p-3 transition hover:shadow-md focus:shadow-md active:shadow-md h-full"
+      >
         <div className="rounded-md overflow-hidden">
           <Image
             src={image}
             alt={title}
             width={800}
             height={450}
-            className="w-full h-auto object-cover transition-all group-hover:brightness-100 brightness-50 duration-300 group-hover:scale-110"
+            className="w-full h-auto object-cover transition-all brightness-50 duration-300 group-hover:brightness-100 group-focus:brightness-100 group-active:brightness-100 group-hover:scale-110 group-focus:scale-110"
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
         </div>
@@ -39,7 +42,10 @@ const Project: React.FC<{ project : IProject }> = ({ project }) => {
           <ul className="flex flex-wrap gap-2 mt-2">
             {techstack.map((tech, idx) => (
               <li key={idx}>
-                <Badge variant="secondary" className="text-xs hover:drop-shadow-primary/50 hover:drop-shadow-sm rounded-full px-2">
+                <Badge
+                  variant="secondary"
+                  className="text-xs hover:drop-shadow-primary/50 focus:drop-shadow-primary/50 group-focus-within:drop-shadow-primary/50 rounded-full px-2"
+                >
                   {tech}
                 </Badge>
               </li>

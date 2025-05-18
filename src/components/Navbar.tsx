@@ -18,6 +18,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { ThemeChanger } from "./theme-changer";
+import { ModeToggle } from "./ModeToggler";
 
 interface NavLink {
   href: string;
@@ -64,6 +65,9 @@ const Navbar: React.FC<{resumeLink : string}> = ({resumeLink}) => {
         </NavigationMenuItem>
         <NavigationMenuItem>
           <ThemeChanger />
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <ModeToggle />
         </NavigationMenuItem>
 
         {/* Mobile Drawer */}

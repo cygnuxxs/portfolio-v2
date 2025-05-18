@@ -52,8 +52,8 @@ export default function ThemeDataProvider({
   const [themeColor, setThemeColor] = useState<ThemeColors>(getSavedThemeColor);
   const { theme } = useTheme();
   useEffect(() => {
-      setGlobalColorTheme(theme as "light" | "dark", themeColor);
-      localStorage.setItem("themeColor", themeColor);
+    setGlobalColorTheme(theme as "light" | "dark", themeColor);
+    localStorage.setItem("themeColor", themeColor);
   }, [theme, themeColor]);
 
   return (

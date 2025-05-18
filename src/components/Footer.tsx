@@ -11,9 +11,9 @@ const Footer: React.FC<{ resumeLink: string }> = ({ resumeLink }) => {
   const reduceMotion = useReducedMotion();
 
   return (
-    <footer className="relative gap-y-8 overflow-hidden flex flex-col justify-center items-center py-[5rem]" aria-label="Site footer">
+    <footer className="relative @container gap-y-8 overflow-hidden flex flex-col justify-center items-center py-[5rem]" aria-label="Site footer">
       {/* Decorative background text */}
-      <SectionText text="Cygnuxxs" />
+      <SectionText className=" @max-sm:bottom-[-1rem]" text="Cygnuxxs" />
 
       {/* Identity Section */}
       <section className="text-center">

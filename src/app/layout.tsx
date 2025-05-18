@@ -72,7 +72,6 @@ export default function RootLayout({
           attribute={"class"}
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
           <ThemeDataProvider>
             <Navbar resumeLink={process.env.RESUME as string} />
