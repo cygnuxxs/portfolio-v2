@@ -34,11 +34,12 @@ const Projects = () => {
   return (
     <section
   id="projects"
+  aria-labelledby="projects-heading"
   className="min-h-[calc(100dvh-5.5rem)] relative flex items-start py-12 justify-center w-full"
 >
   <GridPattern strokeDasharray="1 2" />
   <div className="max-w-4xl w-full space-y-4">
-    <h1 className="text-center font-black text-4xl max-sm:text-2xl">Projects</h1>
+    <h1 id="projects-heading" className="text-center font-black text-4xl max-sm:text-2xl">Projects</h1>
     <p className="text-base p-1 max-sm:text-sm text-foreground text-center">Showcasing my passion for innovation through creative and impactful projects</p>
     <ul className="grid grid-cols-2 max-sm:grid-cols-1 gap-4 pt-8 pb-4">
       {projects.map((project, idx) => (

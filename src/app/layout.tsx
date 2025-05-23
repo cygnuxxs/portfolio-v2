@@ -1,73 +1,42 @@
-import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Dancing_Script, Montserrat, Roboto } from "next/font/google";
+import type React from "react";
+import type { Metadata } from "next/types";
+import { Montserrat, Dancing_Script, Roboto } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
+import { ThemeProvider } from "@/components/theme-provider";
+import ThemeDataProvider from "@/components/theme-color-provider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ThemeDataProvider from "@/components/theme-color-provider";
 
-const dancingSans = Dancing_Script({
-  variable: "--font-dancing-script",
-  subsets: ["latin"],
-  display: "swap",
-});
 const montserrat = Montserrat({
-  variable: "--font-montserrat",
   subsets: ["latin"],
+  variable: "--font-montserrat",
   display: "swap",
 });
-
-const roboto = Roboto({variable : '--font-roboto', display : 'swap', subsets : ['latin']})
+const dancingScript = Dancing_Script({
+  subsets: ["latin"],
+  variable: "--font-dancing-script",
+  display: "swap",
+});
+const roboto = Roboto({
+  subsets: ["latin"],
+  variable: "--font-roboto",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Cygnuxxs | Fullstack Developer",
-  keywords : ['portfolio', 'full stack developer', 'cygnuxxs', 'sde portfolio', 'nextjs', 'nextjs portfolio'
-  ],
-  authors : [{name : 'Ashok Atragadda', url : 'https://linkedin.com/in/ashok-atragadda'}],
-  description:
-    "Creative and results-driven full-stack developer specializing in building scalable web applications with modern technologies like Next.js, Tailwind CSS, and TypeScript. Passionate about clean code, intuitive UI/UX, and delivering impactful digital solutions.",
-  icons: {
-    icon: "/icon.svg",
-  },
-  metadataBase: new URL("https://cygnuxxs-portfolio.vercel.app"),
-  openGraph: {
-    title: "Cygnuxxs | Fullstack Developer",
-    description:
-      "Full-stack developer crafting scalable web apps with Next.js, Tailwind, and TypeScript.",
-    url: "https://cygnuxxs-portfolio.vercel.app",
-    siteName: "Cygnuxxs Portfolio",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Cygnuxxs Portfolio Preview",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Cygnuxxs | Fullstack Developer",
-    description:
-      "Crafting modern, scalable web applications with intuitive UX and clean code.",
-    images: ["/og-image.png"],
-    creator: "@AshyGany",
-  },
+  title: "Cygnuxxs Portfolio",
+  description: "Full Stack Developer Portfolio of Ashok Atragadda",
 };
-
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${dancingSans.variable} ${montserrat.variable} ${roboto.variable} selection:bg-primary/20 antialiased font-montserrat h-dvh`}
-      >
+      <body  className={`${dancingScript.variable} ${montserrat.variable} ${roboto.variable} selection:bg-primary/20 antialiased font-montserrat h-dvh`}>
         <ThemeProvider
           attribute={"class"}
           defaultTheme="system"
@@ -79,6 +48,52 @@ export default function RootLayout({
             <Footer resumeLink={process.env.RESUME as string} />
           </ThemeDataProvider>
         </ThemeProvider>
+        <Script
+          id="schema-person"
+          type="application/ld+json"
+          strategy="afterInteractive"
+        >
+          {`
+          {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "@id": "https://cygnuxxs-portfolio.vercel.app/#person",
+            "name": "Ashok Atragadda",
+            "alternateName": "Cygnuxxs",
+            "description": "Full Stack Developer specializing in Next.js, React, TypeScript, and MERN stack",
+            "image": "https://cygnuxxs-portfolio.vercel.app/hero1.jpg",
+            "url": "https://cygnuxxs-portfolio.vercel.app",
+            "sameAs": [
+              "https://github.com/cygnuxxs",
+              "https://www.linkedin.com/in/ashok-atragadda/",
+              "https://x.com/AshyGany",
+              "https://www.instagram.com/cygnuxxs/"
+            ],
+            "jobTitle": "Full Stack Developer",
+            "knowsAbout": ["Next.js", "React", "TypeScript", "Node.js", "MongoDB", "PostgreSQL", "TailwindCSS"]
+          }
+        `}
+        </Script>
+
+        <Script
+          id="schema-website"
+          type="application/ld+json"
+          strategy="afterInteractive"
+        >
+          {`
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://cygnuxxs-portfolio.vercel.app/#website",
+            "url": "https://cygnuxxs-portfolio.vercel.app",
+            "name": "Cygnuxxs Portfolio",
+            "description": "Full Stack Developer Portfolio of Ashok Atragadda",
+            "publisher": {
+              "@id": "https://cygnuxxs-portfolio.vercel.app/#person"
+            }
+          }
+        `}
+        </Script>
       </body>
     </html>
   );

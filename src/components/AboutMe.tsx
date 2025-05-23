@@ -10,7 +10,7 @@ const AboutMe = () => {
           alt="Ashok Atragadda"
           width={300}
           height={300}
-          sizes="any"
+          sizes="(max-width: 768px) 100vw, 300px"
           className="object-cover rounded-full max-sm:p-4"
           priority
         />

@@ -42,7 +42,7 @@ const Contact = () => {
     <DotsBackground className="w-full overflow-hidden flex items-center justify-center">
       <section
         id="contact-me"
-        className="max-w-4xl h-screen relative pt-[5.5rem] grid place-content-center space-y-4 text-center"
+        className="max-w-4xl min-h-[calc(100vh-7rem)] relative pt-[5.5rem] grid place-content-center space-y-4 text-center"
       >
         <div className="p-1 space-y-4 rounded-md">
           <h1 className="text-4xl max-sm:text-2xl font-black">Contact Me</h1>
