@@ -12,6 +12,12 @@ type ThemeColors =
   | "Yellow"
   | "Violet";
 
+interface SubmissionStat {
+  difficulty: Difficulty;
+  count: number;
+  submissions: number;
+}
+
 type ThemeMode = 'dark' | 'light' | 'system'
   
 interface ThemeColorStateParams {

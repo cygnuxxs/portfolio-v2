@@ -96,99 +96,105 @@ const HomeSection = () => {
         >
           {/* Animated Heading */}
           <motion.h1 
-            className="text-6xl text-center font-black max-sm:text-4xl"
+        className="text-6xl text-center font-black max-sm:text-4xl duration-300"
+        style={{ 
+          perspective: "1000px",
+          transformStyle: "preserve-3d",
+          WebkitTextFillColor: "unset",
+          WebkitBackgroundClip: "unset",
+          backgroundClip: "unset"
+        }}
+          >
+        {headingWords.map((word, index) => (
+          <motion.span
+            key={index}
+            variants={wordVariants}
+            className="inline-block mr-4 max-sm:mr-2"
+            whileHover={{
+          scale: 1.1,
+          // color: "rgb(var(--primary))",
+          textShadow: "0px 0px 20px rgba(var(--primary), 0.8)",
+          transition: { duration: 0.3 }
+            }}
             style={{ 
-              perspective: "1000px",
-              transformStyle: "preserve-3d" 
+          transformOrigin: "center bottom",
+          transformStyle: "preserve-3d",
+          WebkitTextFillColor: "inherit", // Ensures text color follows theme
+          WebkitBackgroundClip: "unset",
+          backgroundClip: "unset"
             }}
           >
-            {headingWords.map((word, index) => (
-              <motion.span
-                key={index}
-                variants={wordVariants}
-                className="inline-block mr-4 max-sm:mr-2"
-                whileHover={{
-                  scale: 1.1,
-                  color: "rgb(var(--primary))",
-                  textShadow: "0px 0px 20px rgba(var(--primary), 0.8)",
-                  transition: { duration: 0.3 }
-                }}
-                style={{ 
-                  transformOrigin: "center bottom",
-                  transformStyle: "preserve-3d" 
-                }}
-              >
-                {word}
-              </motion.span>
-            ))}
+            {word}
+          </motion.span>
+        ))}
           </motion.h1>
 
           {/* Animated Description */}
           <motion.p 
-            className="*:text-primary backdrop-blur-[1px] dark:bg-foreground/5 p-2 *:font-bold text-foreground/80 rounded-xl text-center text-xl max-sm:text-base"
-            variants={paragraphVariants}
-            whileHover={{
-              scale: 1.02,
-              boxShadow: "0 20px 40px rgba(var(--primary), 0.1)",
-              transition: { duration: 0.3 }
-            }}
+        className="*:text-primary backdrop-blur-[1px] dark:bg-foreground/5 p-2 *:font-bold text-foreground/80 rounded-xl text-center text-xl max-sm:text-base"
+        variants={paragraphVariants}
+        whileHover={{
+          scale: 1.02,
+          boxShadow: "0 20px 40px rgba(var(--primary), 0.1)",
+          transition: { duration: 0.3 }
+        }}
           >
-            Passionate Full Stack Developer | Specializing in{" "}
-            <motion.span 
-              className="font-medium relative"
-              variants={highlightVariants}
-              whileHover={{
-                scale: 1.1,
-                textShadow: "0px 0px 8px rgba(var(--primary), 1)",
-                transition: { duration: 0.2 }
-              }}
-              style={{
-                background: "linear-gradient(90deg, rgba(var(--primary), 0.2) 0%, rgba(var(--primary), 0.4) 100%)",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
-                padding: "2px 6px",
-                borderRadius: "4px",
-              }}
-            >
-              Next.js
-            </motion.span> & the{" "}
-            <motion.span 
-              className="font-medium relative"
-              variants={highlightVariants}
-              whileHover={{
-                scale: 1.1,
-                textShadow: "0px 0px 8px rgba(var(--primary), 1)",
-                transition: { duration: 0.2 }
-              }}
-              style={{
-                background: "linear-gradient(90deg, rgba(var(--primary), 0.2) 0%, rgba(var(--primary), 0.4) 100%)",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
-                padding: "2px 6px",
-                borderRadius: "4px",
-              }}
-            >
-              MERN
-            </motion.span> Stack | Exploring the Power of FastAPI for{" "}
-            <motion.span 
-              className="font-medium relative"
-              variants={highlightVariants}
-              whileHover={{
-                scale: 1.1,
-                textShadow: "0px 0px 8px rgba(var(--primary), 1)",
-                transition: { duration: 0.2 }
-              }}
-              style={{
-                background: "linear-gradient(90deg, rgba(var(--primary), 0.2) 0%, rgba(var(--primary), 0.4) 100%)",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
-                padding: "2px 6px",
-                borderRadius: "4px",
-              }}
-            >
-              High-Performance Applications
-            </motion.span>{" "}
-            | Continuously Exploring Cutting-Edge Technologies.
+        Passionate Full Stack Developer | Specializing in{" "}
+        <motion.span 
+          className="font-medium relative"
+          variants={highlightVariants}
+          whileHover={{
+            scale: 1.1,
+            textShadow: "0px 0px 8px rgba(var(--primary), 1)",
+            transition: { duration: 0.2 }
+          }}
+          style={{
+            background: "linear-gradient(90deg, rgba(var(--primary), 0.2) 0%, rgba(var(--primary), 0.4) 100%)",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            padding: "2px 6px",
+            borderRadius: "4px",
+          }}
+        >
+          Next.js
+        </motion.span> & the{" "}
+        <motion.span 
+          className="font-medium relative"
+          variants={highlightVariants}
+          whileHover={{
+            scale: 1.1,
+            textShadow: "0px 0px 8px rgba(var(--primary), 1)",
+            transition: { duration: 0.2 }
+          }}
+          style={{
+            background: "linear-gradient(90deg, rgba(var(--primary), 0.2) 0%, rgba(var(--primary), 0.4) 100%)",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            padding: "2px 6px",
+            borderRadius: "4px",
+          }}
+        >
+          MERN
+        </motion.span> Stack | Exploring the Power of FastAPI for{" "}
+        <motion.span 
+          className="font-medium relative"
+          variants={highlightVariants}
+          whileHover={{
+            scale: 1.1,
+            textShadow: "0px 0px 8px rgba(var(--primary), 1)",
+            transition: { duration: 0.2 }
+          }}
+          style={{
+            background: "linear-gradient(90deg, rgba(var(--primary), 0.2) 0%, rgba(var(--primary), 0.4) 100%)",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            padding: "2px 6px",
+            borderRadius: "4px",
+          }}
+        >
+          High-Performance Applications
+        </motion.span>{" "}
+        | Continuously Exploring Cutting-Edge Technologies.
           </motion.p>
         </motion.div>
 

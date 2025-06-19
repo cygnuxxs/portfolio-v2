@@ -21,7 +21,7 @@ export function ThemeChanger() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='ghost' className="cursor-pointer hover:text-primary text-muted-foreground hover:border hover:bg-transparent">
+        <Button variant='ghost' className="hover:text-primary text-muted-foreground hover:border hover:bg-transparent">
           <Palette color="currentColor" />
         </Button>
       </DropdownMenuTrigger>

@@ -3,8 +3,9 @@ import React from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ContainerTextFlip } from './ui/container-text-flip'
+import LeetcodeStats from './LeetcodeStats'
 
-const AboutMe = () => {
+const AboutMe = ({stats} : {stats : SubmissionStat[]}) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -85,13 +86,14 @@ const AboutMe = () => {
         
         <motion.div
           variants={itemVariants}
+          className='w-full flex items-center max-sm:flex-col gap-8 justify-between'
         >
-          <ContainerTextFlip
+          <ContainerTextFlip className='h-fit'
             words={[
               'Innovative', 'Reliable', 'Adaptable', 'Collaborative', 'Proactive']}
           />
-        </motion.div>
-        
+        <LeetcodeStats stats={stats} />
+        </motion.div>        
         <motion.p 
           className="text-xl pt-8 font-bold font-dancing-script"
           variants={{

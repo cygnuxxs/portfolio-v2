@@ -7,6 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import ThemeDataProvider from "@/components/theme-color-provider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { CursorProvider } from "@/context/CursorContext";
+import CustomCursor from "@/components/CustomCursor";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -36,16 +38,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body  className={`${dancingScript.variable} ${montserrat.variable} ${roboto.variable} selection:bg-primary/20 antialiased font-montserrat h-dvh`}>
+      <body  className={`${dancingScript.variable} ${montserrat.variable} ${roboto.variable} selection:bg-primary/20! antialiased font-montserrat h-dvh`}>
         <ThemeProvider
           attribute={"class"}
           defaultTheme="system"
           enableSystem
+          disableTransitionOnChange
         >
           <ThemeDataProvider>
+            <CursorProvider>
+              <CustomCursor />
             <Navbar resumeLink={process.env.RESUME as string} />
             {children}
             <Footer resumeLink={process.env.RESUME as string} />
+            </CursorProvider>
           </ThemeDataProvider>
         </ThemeProvider>
         <Script
