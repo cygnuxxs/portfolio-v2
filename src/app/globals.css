@@ -20,22 +20,19 @@ html {
   background: linear-gradient(270deg, #ff00cc, #3333ff, #00ffee, #ff00cc);
   background-size: 600% 600%;
   animation: border-glow 4s linear infinite;
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   padding: 2px;
 }
 
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-dancing-script : var(--font-dancing-script);
-  --font-lato : var(--font-lato);
-  --font-montserrat : var(--font-montserrat);
-  --font-roboto : var(--font-roboto);
+  --font-dancing-script: var(--font-dancing-script);
+  --font-lato: var(--font-lato);
+  --font-montserrat: var(--font-montserrat);
+  --font-roboto: var(--font-roboto);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -140,9 +137,8 @@ html {
   --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
-
 .unset {
-  all : unset;
+  all: unset;
 }
 @layer base {
   * {
@@ -156,25 +152,24 @@ html {
       cursor: auto !important;
     }
   }
-  
+
   /* Show default cursor on small screens */
   @media (max-width: 480px) {
     * {
       cursor: auto !important;
     }
   }
-  
+
   /* Show default cursor on devices that prefer reduced motion */
   @media (prefers-reduced-motion: reduce) {
     * {
       cursor: auto !important;
     }
   }
-  
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
-
-@config '../../tailwind.config.ts'
+@config '../../tailwind.config.ts';
