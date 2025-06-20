@@ -16,7 +16,7 @@ const THEME_COLORS: ThemeColors[] = [
   "Yellow",
   "Zinc",
 ] as const;
-const DEFAULT_THEME_COLOR: ThemeColors = "Zinc";
+const DEFAULT_THEME_COLOR: ThemeColors = "Green";
 
 // Define the context shape
 interface ThemeColorStateParams {
