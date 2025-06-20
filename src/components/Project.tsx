@@ -21,13 +21,14 @@ interface IProject {
   featured?: boolean;
 }
 
+// Container animation variants
 const containerVariants = {
-  hidden: { opacity: 0, y: 50 }, // Removed scale
+  hidden: { opacity: 0, y: 50 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.6,
+      duration: 0.2,
       ease: [0.25, 0.46, 0.45, 0.94],
       staggerChildren: 0.2,
       delayChildren: 0.3,
@@ -35,40 +36,29 @@ const containerVariants = {
   },
 };
 
-// Enhanced child animation variants
+// Child animation variants
 const childVariants = {
-  hidden: { opacity: 0, y: 30, x: -10 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    x: 0,
     transition: {
-      duration: 0.5,
+      duration: 0.2,
       ease: [0.25, 0.46, 0.45, 0.94],
     },
   },
 };
 
-// Enhanced badge animation variants
-const badgeVariants = {
-  hidden: { opacity: 0, scale: 0.8, y: 20 },
-  visible: (i: number) => ({
+// Badge container animation variants
+const badgeContainerVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
     opacity: 1,
-    scale: 1,
     y: 0,
     transition: {
-      delay: i * 0.1,
-      duration: 0.4,
+      duration: 0.2,
       ease: "easeOut",
-      type: "spring",
-      stiffness: 150,
     },
-  }),
-  hover: {
-    scale: 1.15,
-    y: -3,
-    rotate: 2,
-    transition: { duration: 0.2 },
   },
 };
 
@@ -119,7 +109,6 @@ const Project: React.FC<{ project: IProject }> = ({ project }) => {
         viewport={{ once: true, margin: "-100px" }}
         whileHover={{
           y: -8,
-          scale: 1.02,
           borderColor: "rgb(var(--primary))",
           boxShadow: "0 25px 50px -12px rgba(var(--primary), 0.25)",
         }}
@@ -140,7 +129,7 @@ const Project: React.FC<{ project: IProject }> = ({ project }) => {
           </motion.div>
         )}
 
-        {/* Image container with enhanced effects */}
+        {/* Image container */}
         <motion.div
           className="relative rounded-t-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5"
           variants={childVariants}
@@ -150,13 +139,14 @@ const Project: React.FC<{ project: IProject }> = ({ project }) => {
               src={image}
               alt={title}
               fill
-              className="object-cover transition-all duration-700 group-hover:scale-105" // Changed from scale-110
+              className="object-cover transition-all duration-700 group-hover:scale-105"
               style={{
                 filter: isHovered
                   ? "brightness(1) saturate(1.1)"
                   : "brightness(0.7) saturate(0.9)",
               }}
               sizes="(max-width: 1024px) 100vw, 50vw"
+              priority={featured}
               onLoad={() => setImageLoaded(true)}
             />
 
@@ -183,13 +173,13 @@ const Project: React.FC<{ project: IProject }> = ({ project }) => {
           </div>
         </motion.div>
 
-        {/* Content section with enhanced spacing */}
+        {/* Content section */}
         <div className="flex flex-col flex-grow p-6 space-y-4">
           <motion.div
             className="flex flex-col gap-3"
             variants={containerVariants}
           >
-            {/* Title with enhanced typography */}
+            {/* Title */}
             <motion.div
               className="flex items-start justify-between gap-2"
               variants={childVariants}
@@ -215,7 +205,7 @@ const Project: React.FC<{ project: IProject }> = ({ project }) => {
               )}
             </motion.div>
 
-            {/* Description with improved typography */}
+            {/* Description */}
             <motion.p
               className="text-sm text-muted-foreground leading-relaxed line-clamp-3"
               variants={childVariants}
@@ -223,46 +213,35 @@ const Project: React.FC<{ project: IProject }> = ({ project }) => {
               {description}
             </motion.p>
 
-            {/* Enhanced tech stack badges */}
+            {/* Tech stack badges */}
             <motion.div
               className="flex flex-wrap gap-2"
-              variants={containerVariants}
+              variants={badgeContainerVariants}
             >
-              {techstack.slice(0, 6).map((tech, idx) => (
-                <motion.div
+              {techstack.slice(0, 6).map((tech) => (
+                <Badge
                   key={tech}
-                  custom={idx}
-                  variants={badgeVariants}
-                  whileHover="hover"
+                  variant="outline"
+                  className="text-xs bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 hover:border-primary/40 backdrop-blur-sm hover:shadow-lg hover:shadow-primary/20 rounded-full px-3 py-1 font-medium transition-all duration-300"
                 >
-                  <Badge
-                    variant="outline"
-                    className="text-xs bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 hover:border-primary/40 backdrop-blur-sm hover:shadow-lg hover:shadow-primary/20 rounded-full px-3 py-1 font-medium transition-all duration-300"
-                  >
-                    {tech}
-                  </Badge>
-                </motion.div>
+                  {tech}
+                </Badge>
               ))}
               {techstack.length > 6 && (
-                <motion.div
-                  variants={badgeVariants}
-                  custom={6}
-                  whileHover="hover"
+                <Badge
+                  variant="secondary"
+                  className="text-xs rounded-full px-3 py-1"
                 >
-                  <Badge
-                    variant="secondary"
-                    className="text-xs rounded-full px-3 py-1"
-                  >
-                    +{techstack.length - 6}
-                  </Badge>
-                </motion.div>
+                  +{techstack.length - 6}
+                </Badge>
               )}
             </motion.div>
           </motion.div>
 
+          {/* Buttons */}
           <div className="flex gap-3 mt-auto pt-4">
             <Button
-              size={"sm"}
+              size="sm"
               variant="outline"
               className="flex-1 gap-2 bg-gradient-to-r from-background to-background/50 hover:from-primary/10 hover:to-primary/5 border-primary/20 hover:border-primary/40 transition-all duration-300"
               asChild
@@ -273,11 +252,10 @@ const Project: React.FC<{ project: IProject }> = ({ project }) => {
               </Link>
             </Button>
             <Button
-              size={"sm"}
-              // className="flex-1 gap-2 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl hover:shadow-primary/25 transition-all duration-300"
+              size="sm"
+              variant="secondary"
               className="flex-1 bg-primary/10 border-primary border"
               asChild
-              variant={"secondary"}
             >
               <Link href={preview} target="_blank">
                 <ExternalLink className="w-4 h-4" />
