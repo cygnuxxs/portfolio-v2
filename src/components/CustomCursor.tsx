@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { motion, Variants } from 'motion/react';
 import { useCursor } from '../context/CursorContext';
 
@@ -28,12 +28,27 @@ const CustomCursor = () => {
   const { cursorVariant } = useCursor();
   const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
   const [isMoving, setIsMoving] = useState(false);
+  const [isTouching, setIsTouching] = useState(false);
   const [pathHistory, setPathHistory] = useState<TrailPoint[]>([]);
   const [physicsTrails, setPhysicsTrails] = useState<PhysicsTrail[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
   
   const lastPositionRef = useRef<MousePosition>({ x: 0, y: 0 });
   const trailIdRef = useRef<number>(0);
   const animationFrameRef = useRef<number>(0);
+
+  // Detect if device is mobile/touch
+  useEffect(() => {
+    const checkMobile = () => {
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.matchMedia('(max-width: 480px)').matches;
+      setIsMobile(isTouchDevice || isSmallScreen);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Physics simulation for shooting star trails
   useEffect(() => {
@@ -63,73 +78,124 @@ const CustomCursor = () => {
     };
   }, []);
 
+  // Common position update logic
+  const updatePosition = useCallback((clientX: number, clientY: number) => {
+    const newX = clientX;
+    const newY = clientY;
+    const now = Date.now();
+
+    const velocity = {
+      x: newX - lastPositionRef.current.x,
+      y: newY - lastPositionRef.current.y,
+    };
+
+    const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2);
+
+    // Create new trail point
+    const newPoint: TrailPoint = {
+      x: newX,
+      y: newY,
+      timestamp: now,
+      velocity,
+    };
+
+    // Update path history (keep last 20 points)
+    setPathHistory(prev => [...prev.slice(-19), newPoint]);
+
+    // Create physics trails on fast movement (adjusted threshold for mobile)
+    const speedThreshold = isMobile ? 3 : 5;
+    if (speed > speedThreshold) {
+      const numTrails = Math.min(Math.floor(speed / (isMobile ? 8 : 10)), isMobile ? 3 : 5);
+      const newPhysicsTrails: PhysicsTrail[] = [];
+
+      for (let i = 0; i < numTrails; i++) {
+        newPhysicsTrails.push({
+          x: newX + (Math.random() - 0.5) * (isMobile ? 8 : 10),
+          y: newY + (Math.random() - 0.5) * (isMobile ? 8 : 10),
+          vx: velocity.x * 0.1 + (Math.random() - 0.5) * 2,
+          vy: velocity.y * 0.1 + (Math.random() - 0.5) * 2,
+          life: 1,
+          id: trailIdRef.current++,
+        });
+      }
+
+      setPhysicsTrails(prev => [...prev, ...newPhysicsTrails]);
+    }
+
+    setMousePosition({ x: newX, y: newY });
+    setIsMoving(true);
+
+    lastPositionRef.current = { x: newX, y: newY };
+  }, [isMobile]);
+
   useEffect(() => {
     let timeout: NodeJS.Timeout;
 
+    // Mouse events for desktop
     const mouseMove = (e: MouseEvent) => {
-      const newX = e.clientX;
-      const newY = e.clientY;
-      const now = Date.now();
-
-      const velocity = {
-        x: newX - lastPositionRef.current.x,
-        y: newY - lastPositionRef.current.y,
-      };
-
-      const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2);
-
-      // Create new trail point
-      const newPoint: TrailPoint = {
-        x: newX,
-        y: newY,
-        timestamp: now,
-        velocity,
-      };
-
-      // Update path history (keep last 20 points)
-      setPathHistory(prev => [...prev.slice(-19), newPoint]);
-
-      // Create physics trails on fast movement
-      if (speed > 5) {
-        const numTrails = Math.min(Math.floor(speed / 10), 5);
-        const newPhysicsTrails: PhysicsTrail[] = [];
-
-        for (let i = 0; i < numTrails; i++) {
-          newPhysicsTrails.push({
-            x: newX + (Math.random() - 0.5) * 10,
-            y: newY + (Math.random() - 0.5) * 10,
-            vx: velocity.x * 0.1 + (Math.random() - 0.5) * 2,
-            vy: velocity.y * 0.1 + (Math.random() - 0.5) * 2,
-            life: 1,
-            id: trailIdRef.current++,
-          });
-        }
-
-        setPhysicsTrails(prev => [...prev, ...newPhysicsTrails]);
+      if (!isMobile) {
+        updatePosition(e.clientX, e.clientY);
+        clearTimeout(timeout);
+        timeout = setTimeout(() => setIsMoving(false), 150);
       }
-
-      setMousePosition({ x: newX, y: newY });
-      setIsMoving(true);
-
-      clearTimeout(timeout);
-      timeout = setTimeout(() => setIsMoving(false), 150);
-
-      lastPositionRef.current = { x: newX, y: newY };
     };
 
-    window.addEventListener('mousemove', mouseMove);
+    // Touch events for mobile
+    const touchStart = (e: TouchEvent) => {
+      if (isMobile) {
+        setIsTouching(true);
+        const touch = e.touches[0];
+        updatePosition(touch.clientX, touch.clientY);
+        clearTimeout(timeout);
+        timeout = setTimeout(() => setIsMoving(false), 150);
+      }
+    };
+
+    const touchMove = (e: TouchEvent) => {
+      if (isMobile) {
+        const touch = e.touches[0];
+        updatePosition(touch.clientX, touch.clientY);
+        clearTimeout(timeout);
+        timeout = setTimeout(() => setIsMoving(false), 150);
+      }
+    };
+
+    const touchEnd = () => {
+      if (isMobile) {
+        setIsTouching(false);
+        clearTimeout(timeout);
+        timeout = setTimeout(() => setIsMoving(false), 300);
+      }
+    };
+
+    // Add event listeners
+    if (!isMobile) {
+      window.addEventListener('mousemove', mouseMove);
+    } else {
+      window.addEventListener('touchstart', touchStart, { passive: false });
+      window.addEventListener('touchmove', touchMove, { passive: false });
+      window.addEventListener('touchend', touchEnd);
+    }
+
     return () => {
       window.removeEventListener('mousemove', mouseMove);
+      window.removeEventListener('touchstart', touchStart);
+      window.removeEventListener('touchmove', touchMove);
+      window.removeEventListener('touchend', touchEnd);
       clearTimeout(timeout);
     };
-  }, []);
+  }, [isMobile, updatePosition]);
+
+  // Adjust cursor size for mobile
+  const cursorSize = isMobile ? 32 : 24;
+  const halfSize = cursorSize / 2;
 
   const mainCursorVariants: Variants = {
     default: {
-      x: mousePosition.x - 12,
-      y: mousePosition.y - 12,
+      x: mousePosition.x - halfSize,
+      y: mousePosition.y - halfSize,
       scale: 1,
-      opacity: 0.9,
+      opacity: isMobile ? (isTouching ? 0.8 : 0.4) : 0.9,
       rotate: 0,
       borderRadius: '50%',
       transition: {
@@ -142,10 +208,10 @@ const CustomCursor = () => {
       },
     },
     text: {
-      x: mousePosition.x - 20,
-      y: mousePosition.y - 20,
-      scale: 1.8,
-      opacity: 0.6,
+      x: mousePosition.x - (isMobile ? 24 : 20),
+      y: mousePosition.y - (isMobile ? 24 : 20),
+      scale: isMobile ? 1.4 : 1.8,
+      opacity: isMobile ? (isTouching ? 0.7 : 0.3) : 0.6,
       rotate: pathHistory.length > 1
         ? Math.atan2(
             pathHistory[pathHistory.length - 1].velocity.y,
@@ -163,10 +229,10 @@ const CustomCursor = () => {
       },
     },
     hover: {
-      x: mousePosition.x - 16,
-      y: mousePosition.x - 16,
-      scale: 1.4,
-      opacity: 0.8,
+      x: mousePosition.x - (isMobile ? 20 : 16),
+      y: mousePosition.y - (isMobile ? 20 : 16),
+      scale: isMobile ? 1.2 : 1.4,
+      opacity: isMobile ? (isTouching ? 0.9 : 0.5) : 0.8,
       rotate: 0,
       borderRadius: '20%',
       transition: {
@@ -179,9 +245,9 @@ const CustomCursor = () => {
       },
     },
     click: {
-      x: mousePosition.x - 8,
-      y: mousePosition.y - 8,
-      scale: 0.6,
+      x: mousePosition.x - (isMobile ? 12 : 8),
+      y: mousePosition.y - (isMobile ? 12 : 8),
+      scale: isMobile ? 0.8 : 0.6,
       opacity: 1,
       rotate: 45,
       borderRadius: '10%',
@@ -196,22 +262,27 @@ const CustomCursor = () => {
     },
   };
 
+  // Don't render cursor on mobile devices at all
+  if (isMobile) {
+    return null;
+  }
+
   return (
     <>
-      {/* Physics-based shooting star trails */}
-      {physicsTrails.slice(-20).map((trail) => (
+      {/* Physics-based shooting star trails - reduced on mobile for performance */}
+      {physicsTrails.slice(isMobile ? -10 : -20).map((trail) => (
         <motion.div
           key={trail.id}
           className="fixed top-0 left-0 pointer-events-none z-[9995]"
           style={{
-            left: trail.x - 3,
-            top: trail.y - 3,
-            width: 6,
-            height: 6,
+            left: trail.x - (isMobile ? 2 : 3),
+            top: trail.y - (isMobile ? 2 : 3),
+            width: isMobile ? 4 : 6,
+            height: isMobile ? 4 : 6,
             backgroundColor: 'var(--primary)',
             borderRadius: '50%',
-            opacity: Math.max(0, trail.life * 0.8),
-            boxShadow: `0 0 ${Math.max(0, trail.life) * 16}px var(--primary)`,
+            opacity: Math.max(0, trail.life * (isMobile ? 0.6 : 0.8)),
+            boxShadow: `0 0 ${Math.max(0, trail.life) * (isMobile ? 12 : 16)}px var(--primary)`,
             mixBlendMode: 'screen',
             position: 'fixed',
             pointerEvents: 'none',
@@ -219,11 +290,11 @@ const CustomCursor = () => {
         />
       ))}
 
-      {/* Memory-based path trails */}
-      {pathHistory.slice(-10).map((point, index) => {
+      {/* Memory-based path trails - reduced on mobile */}
+      {pathHistory.slice(isMobile ? -6 : -10).map((point, index) => {
         const age = (Date.now() - point.timestamp) / 1000;
-        const life = Math.max(0, 1 - age / 1.2); // Slightly shorter trail for crispness
-        const size = 3 + index * 0.25;
+        const life = Math.max(0, 1 - age / (isMobile ? 0.8 : 1.2));
+        const size = (isMobile ? 2 : 3) + index * 0.25;
 
         return (
           <motion.div
@@ -237,9 +308,9 @@ const CustomCursor = () => {
               backgroundColor: 'var(--primary)',
               borderRadius: '50%',
               mixBlendMode: 'difference',
-              filter: `blur(${(1 - life) * 1.2}px)`,
-              boxShadow: `0 0 ${life * 8}px var(--primary)`,
-              opacity: life * 0.5,
+              filter: `blur(${(1 - life) * (isMobile ? 0.8 : 1.2)}px)`,
+              boxShadow: `0 0 ${life * (isMobile ? 6 : 8)}px var(--primary)`,
+              opacity: life * (isMobile ? 0.4 : 0.5),
               position: 'fixed',
               pointerEvents: 'none',
               transform: `scale(${life * 1.1})`,
@@ -255,14 +326,16 @@ const CustomCursor = () => {
         variants={mainCursorVariants}
         animate={cursorVariant}
         style={{
-          width: 24,
-          height: 24,
-          border: '2px solid var(--primary)',
-          background: isMoving
+          width: cursorSize,
+          height: cursorSize,
+          border: `${isMobile ? 3 : 2}px solid var(--primary)`,
+          background: isMoving || isTouching
             ? 'radial-gradient(circle, rgba(var(--primary), 0.2), transparent)'
             : 'transparent',
           backdropFilter: 'blur(3px)',
-          boxShadow: isMoving ? '0 0 10px rgba(var(--primary), 0.3)' : 'none',
+          boxShadow: isMoving || isTouching 
+            ? `0 0 ${isMobile ? 15 : 10}px rgba(var(--primary), 0.3)` 
+            : 'none',
           position: 'fixed',
           pointerEvents: 'none',
         }}

@@ -149,6 +149,28 @@ html {
     @apply border-border outline-ring/50;
     cursor: none !important;
   }
+
+  /* Show default cursor on touch devices */
+  @media (pointer: coarse) {
+    * {
+      cursor: auto !important;
+    }
+  }
+  
+  /* Show default cursor on small screens */
+  @media (max-width: 480px) {
+    * {
+      cursor: auto !important;
+    }
+  }
+  
+  /* Show default cursor on devices that prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      cursor: auto !important;
+    }
+  }
+  
   body {
     @apply bg-background text-foreground;
   }

@@ -4,8 +4,9 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ContainerTextFlip } from './ui/container-text-flip'
 import LeetcodeStats from './LeetcodeStats'
+import { Difficulty } from '@/actions/actions'
 
-const AboutMe = ({stats} : {stats : SubmissionStat[]}) => {
+const AboutMe = ({stats, totalAvailable, totalQuestions} : {stats : SubmissionStat[], totalAvailable : number, totalQuestions : Record<Difficulty, number>}) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -92,7 +93,7 @@ const AboutMe = ({stats} : {stats : SubmissionStat[]}) => {
             words={[
               'Innovative', 'Reliable', 'Adaptable', 'Collaborative', 'Proactive']}
           />
-        <LeetcodeStats stats={stats} />
+        <LeetcodeStats stats={stats} totalAvailable={totalAvailable} totalQuestions={totalQuestions} />
         </motion.div>        
         <motion.p 
           className="text-xl pt-8 font-bold font-dancing-script"

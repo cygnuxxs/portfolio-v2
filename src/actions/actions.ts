@@ -2,6 +2,12 @@
 
 export type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
+export interface SubmissionStat {
+  difficulty: Difficulty;
+  count: number;
+  submissions: number;
+}
+
 interface LeetCodeResponse {
   data: {
     matchedUser: {
@@ -12,11 +18,23 @@ interface LeetCodeResponse {
           submissions: number;
         }[];
       };
+      problemsSolvedBeatsStats: {
+        difficulty: string;
+        percentage: number;
+      }[];
     };
+    allQuestionsCount: {
+      difficulty: string;
+      count: number;
+    }[];
   };
 }
 
-export async function fetchLeetCodeStats(username: string): Promise<SubmissionStat[]> {
+export async function fetchLeetCodeStats(username: string): Promise<{
+  stats: SubmissionStat[];
+  totalQuestions: Record<Difficulty, number>;
+  totalAvailable: number;
+}> {
   const query = `
     query userProblemsSolved($username: String!) {
       matchedUser(username: $username) {
@@ -27,6 +45,14 @@ export async function fetchLeetCodeStats(username: string): Promise<SubmissionSt
             submissions
           }
         }
+        problemsSolvedBeatsStats {
+          difficulty
+          percentage
+        }
+      }
+      allQuestionsCount {
+        difficulty
+        count
       }
     }
   `;
@@ -49,7 +75,9 @@ export async function fetchLeetCodeStats(username: string): Promise<SubmissionSt
   const json: LeetCodeResponse = await response.json();
 
   const rawStats = json.data?.matchedUser?.submitStatsGlobal?.acSubmissionNum ?? [];
+  const allQuestions = json.data?.allQuestionsCount ?? [];
 
+  // Process user stats
   const filtered: SubmissionStat[] = rawStats
     .filter((s) => ['Easy', 'Medium', 'Hard'].includes(s.difficulty))
     .sort((a, b) => {
@@ -57,5 +85,24 @@ export async function fetchLeetCodeStats(username: string): Promise<SubmissionSt
       return order[a.difficulty as Difficulty] - order[b.difficulty as Difficulty];
     }) as SubmissionStat[];
 
-  return filtered;
+  // Process total questions available
+  const totalQuestions: Record<Difficulty, number> = {
+    Easy: 0,
+    Medium: 0,
+    Hard: 0,
+  };
+
+  allQuestions
+    .filter((q) => ['Easy', 'Medium', 'Hard'].includes(q.difficulty))
+    .forEach((q) => {
+      totalQuestions[q.difficulty as Difficulty] = q.count;
+    });
+
+  const totalAvailable = Object.values(totalQuestions).reduce((sum, count) => sum + count, 0);
+
+  return {
+    stats: filtered,
+    totalQuestions,
+    totalAvailable,
+  };
 }
