@@ -21,21 +21,15 @@ interface IProject {
   featured?: boolean;
 }
 
-// Enhanced container animation variants
 const containerVariants = {
-  hidden: {
-    opacity: 0,
-    y: 50,
-    scale: 0.95,
-  },
+  hidden: { opacity: 0, y: 50 }, // Removed scale
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
     transition: {
       duration: 0.6,
       ease: [0.25, 0.46, 0.45, 0.94],
-      staggerChildren: 0.1,
+      staggerChildren: 0.2,
       delayChildren: 0.3,
     },
   },
@@ -156,7 +150,7 @@ const Project: React.FC<{ project: IProject }> = ({ project }) => {
               src={image}
               alt={title}
               fill
-              className="object-cover transition-all duration-700 group-hover:scale-110 group-focus:scale-110"
+              className="object-cover transition-all duration-700 group-hover:scale-105" // Changed from scale-110
               style={{
                 filter: isHovered
                   ? "brightness(1) saturate(1.1)"
@@ -268,7 +262,7 @@ const Project: React.FC<{ project: IProject }> = ({ project }) => {
 
           <div className="flex gap-3 mt-auto pt-4">
             <Button
-            size={'sm'}
+              size={"sm"}
               variant="outline"
               className="flex-1 gap-2 bg-gradient-to-r from-background to-background/50 hover:from-primary/10 hover:to-primary/5 border-primary/20 hover:border-primary/40 transition-all duration-300"
               asChild
@@ -279,11 +273,11 @@ const Project: React.FC<{ project: IProject }> = ({ project }) => {
               </Link>
             </Button>
             <Button
-            size={'sm'}
+              size={"sm"}
               // className="flex-1 gap-2 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl hover:shadow-primary/25 transition-all duration-300"
               className="flex-1 bg-primary/10 border-primary border"
               asChild
-              variant={'secondary'}
+              variant={"secondary"}
             >
               <Link href={preview} target="_blank">
                 <ExternalLink className="w-4 h-4" />
