@@ -65,7 +65,7 @@ export async function fetchLeetCodeStats(username: string): Promise<{
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ query, variables }),
-    next: { revalidate: 60 }, // optional ISR
+    next: { revalidate: 5 }, // optional ISR
   });
 
   if (!response.ok) {
