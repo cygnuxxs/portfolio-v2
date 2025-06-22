@@ -1,4 +1,4 @@
-'use client'
+
 import DotsBackground from "./DotsBackground";
 
 const HomeSection = () => {
@@ -43,30 +43,6 @@ const HomeSection = () => {
           </p>
         </div>
       </section>
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(2rem);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes fadeInDown {
-          from {
-            opacity: 0;
-            transform: translateY(-1rem);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </DotsBackground>
   );
 };

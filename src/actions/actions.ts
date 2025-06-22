@@ -1,35 +1,5 @@
 'use server';
 
-export type Difficulty = 'Easy' | 'Medium' | 'Hard';
-
-export interface SubmissionStat {
-  difficulty: Difficulty;
-  count: number;
-  submissions: number;
-}
-
-interface LeetCodeResponse {
-  data: {
-    matchedUser: {
-      submitStatsGlobal: {
-        acSubmissionNum: {
-          difficulty: string;
-          count: number;
-          submissions: number;
-        }[];
-      };
-      problemsSolvedBeatsStats: {
-        difficulty: string;
-        percentage: number;
-      }[];
-    };
-    allQuestionsCount: {
-      difficulty: string;
-      count: number;
-    }[];
-  };
-}
-
 export async function fetchLeetCodeStats(username: string): Promise<{
   stats: SubmissionStat[];
   totalQuestions: Record<Difficulty, number>;
@@ -105,4 +75,61 @@ export async function fetchLeetCodeStats(username: string): Promise<{
     totalQuestions,
     totalAvailable,
   };
+}
+
+export async function fetchRecentSubmissions(username: string, limit: number = 20): Promise<RecentSubmission[]> {
+  const query = `
+    query recentSubmissions($username: String!, $limit: Int!) {
+      recentSubmissionList(username: $username, limit: $limit) {
+        id
+        title
+        titleSlug
+        timestamp
+        statusDisplay
+        lang
+        url
+      }
+    }
+  `;
+
+  const variables = { username, limit };
+
+  const response = await fetch('https://leetcode.com/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, variables }),
+    next: { revalidate: 60 }, // Cache for 1 minute since submissions change frequently
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch recent submissions for ${username}`);
+  }
+
+  const json: RecentSubmissionsResponse = await response.json();
+
+  return json.data?.recentSubmissionList ?? [];
+}
+
+export async function fetchLeetCodeData(username: string): Promise<{
+  stats: SubmissionStat[];
+  totalQuestions: Record<Difficulty, number>;
+  totalAvailable: number;
+  recentSubmissions: RecentSubmission[];
+}> {
+  try {
+    const [statsData, recentSubmissions] = await Promise.all([
+      fetchLeetCodeStats(username),
+      fetchRecentSubmissions(username, 10)
+    ]);
+
+    return {
+      ...statsData,
+      recentSubmissions,
+    };
+  } catch (error) {
+    console.error('Error fetching LeetCode data:', error);
+    throw error;
+  }
 }

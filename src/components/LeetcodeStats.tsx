@@ -3,163 +3,32 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import LeetcodeIcon from "@/components/icons/leetcode.svg";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
-
-export interface SubmissionStat {
-  difficulty: "Easy" | "Medium" | "Hard";
-  count: number;
-  submissions: number;
-}
-
-export interface LeetcodeStatsProps {
-  stats: SubmissionStat[];
-  totalQuestions: Record<"Easy" | "Medium" | "Hard", number>;
-  totalAvailable: number;
-}
-
-const CircularProgress = ({ 
-  percentage, 
-  size = 80, 
-  strokeWidth = 8,
-  color = "text-primary"
-}: { 
-  percentage: number; 
-  size?: number; 
-  strokeWidth?: number;
-  color?: string;
-}) => {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
-  return (
-    <div className="relative inline-flex items-center justify-center">
-      <svg width={size} height={size} className="transform -rotate-90">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          fill="none"
-          className="text-muted/20"
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          className={cn(color, "transition-all duration-1000 ease-out")}
-          strokeLinecap="round"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-bold">{percentage.toFixed(0)}%</span>
-      </div>
-    </div>
-  );
-};
-
-const ProgressBar = ({ 
-  percentage, 
-  color = "bg-primary",
-  height = "h-2"
-}: { 
-  percentage: number; 
-  color?: string;
-  height?: string;
-}) => (
-  <div className={cn("w-full bg-muted/30 rounded-full overflow-hidden", height)}>
-    <div 
-      className={cn(color, "rounded-full transition-all duration-1000 ease-out", height)}
-      style={{ width: `${Math.min(percentage, 100)}%` }}
-    />
-  </div>
-);
-
-const StatCard = ({ 
-  difficulty, 
-  count, 
-  total, 
-  acceptance,
-  color,
-  bgColor 
-}: {
-  difficulty: string;
-  count: number;
-  total: number;
-  acceptance: string;
-  color: string;
-  bgColor: string;
-}) => {
-  const percentage = total > 0 ? (count / total) * 100 : 0;
-  
-  return (
-    <div className={cn(
-      "group relative overflow-hidden rounded-xl border p-4 transition-all duration-300",
-      "hover:shadow-lg hover:scale-[1.02] hover:border-primary/50",
-      bgColor
-    )}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className={cn(
-            "w-3 h-3 rounded-full shadow-sm",
-            difficulty === 'Easy' && 'bg-green-500 shadow-green-500/30',
-            difficulty === 'Medium' && 'bg-yellow-500 shadow-yellow-500/30',
-            difficulty === 'Hard' && 'bg-red-500 shadow-red-500/30'
-          )} />
-          <span className={cn("font-semibold text-sm", color)}>
-            {difficulty}
-          </span>
-        </div>
-        <div className="text-right">
-          <p className="font-bold text-lg leading-none">
-            {count}
-            <span className="text-xs font-normal text-muted-foreground ml-1">
-              /{total}
-            </span>
-          </p>
-        </div>
-      </div>
-      
-      <ProgressBar 
-        percentage={percentage} 
-        color={
-          difficulty === 'Easy' ? 'bg-green-500' :
-          difficulty === 'Medium' ? 'bg-yellow-500' : 'bg-red-500'
-        }
-        height="h-1.5"
-      />
-      
-      <div className="flex justify-between items-center mt-2">
-        <span className="text-xs text-muted-foreground">
-          {percentage.toFixed(1)}% solved
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {acceptance}% accepted
-        </span>
-      </div>
-      
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent 
-                      -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-    </div>
-  );
-};
+import RecentSubmissionCard from "./RecentSubmission";
+import { CircularProgress } from "./Progress";
+import StatCard from "./StatCard";
 
 const LeetcodeStats = ({
   stats = [],
   totalQuestions,
   totalAvailable,
+  recentSubmissions = [],
 }: LeetcodeStatsProps) => {
   const totalSolved = stats.reduce((sum, stat) => sum + stat.count, 0);
-  const totalSubmissions = stats.reduce((sum, stat) => sum + stat.submissions, 0);
-  const overallProgress = totalAvailable > 0 ? (totalSolved / totalAvailable) * 100 : 0;
+  const totalSubmissions = stats.reduce(
+    (sum, stat) => sum + stat.submissions,
+    0
+  );
+  const overallProgress =
+    totalAvailable > 0 ? (totalSolved / totalAvailable) * 100 : 0;
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -187,102 +56,172 @@ const LeetcodeStats = ({
     }
   };
 
-  return (
-    <HoverCard openDelay={200} closeDelay={100}>
-      <HoverCardTrigger asChild>
-        <Button
-          className={cn(
-            "group relative overflow-hidden",
-            "flex gap-2 text-xs rounded-xl font-medium border-2 border-primary/20",
-            "bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5",
-            "hover:border-primary/40 hover:shadow-lg hover:shadow-primary/20",
-            "transition-all duration-300 hover:scale-105",
-            "text-primary hover:text-primary"
-          )}
-          size="sm"
-          variant="ghost"
-        >
-          <LeetcodeIcon className="w-4 h-4 transition-transform group-hover:scale-110" />
-          <span className="hidden sm:inline">LeetCode</span>
-          <span className="font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            {totalSolved}
-          </span>
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent 
-                          -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-        </Button>
-      </HoverCardTrigger>
-      
-      <HoverCardContent 
-        align="end" 
-        className="w-96 p-0 border-2 border-primary/20 shadow-2xl shadow-primary/10 rounded-2xl overflow-hidden"
-        sideOffset={8}
-      >
-        <div className="bg-gradient-to-br from-primary/5 via-background to-primary/5 p-6">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="p-2 rounded-full bg-primary/10">
-              <LeetcodeIcon className="w-6 h-6 text-primary" />
+  const StatsContent = () => (
+    <div className="bg-gradient-to-br from-primary/5 via-background to-primary/5 p-2 sm:p-4 w-full max-w-full overflow-hidden">
+      <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-6">
+        <div className="p-1 sm:p-2 rounded-full bg-primary/10">
+          <LeetcodeIcon className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
+        </div>
+        <h3 className="font-bold text-sm sm:text-xl bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+          LeetCode Statistics
+        </h3>
+      </div>
+      <div className="flex flex-wrap gap-3 w-full">
+          <div className="text-center flex-1 space-y-2">
+            <CircularProgress
+              percentage={overallProgress}
+              size={60}
+              strokeWidth={6}
+              color="text-primary"
+            />
+            <div>
+              <p className="text-xl sm:text-3xl font-bold text-primary">
+                {totalSolved}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                of {totalAvailable} solved
+              </p>
             </div>
-            <h3 className="font-bold text-xl bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              LeetCode Statistics
-            </h3>
-          </div>
 
-          <div className="grid grid-cols-2 gap-6 mb-6">
-            <div className="text-center space-y-3">
-              <CircularProgress 
-                percentage={overallProgress} 
-                size={100}
-                strokeWidth={10}
-                color="text-primary"
-              />
-              <div>
-                <p className="text-3xl font-bold text-primary">
-                  {totalSolved}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  of {totalAvailable} solved
-                </p>
+            {/* Summary Stats */}
+            <div className="border-t border-primary/10 pt-2 sm:pt-4">
+              <div className="flex flex-col gap-1.5 text-xs">
+                <div className="flex justify-between items-center p-1.5 rounded-lg bg-muted/30">
+                  <span className="text-muted-foreground">Submissions</span>
+                  <span className="font-semibold">
+                    {totalSubmissions.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-1.5 rounded-lg bg-muted/30">
+                  <span className="text-muted-foreground">Success Rate</span>
+                  <span className="font-semibold">
+                    {totalSubmissions > 0
+                      ? ((totalSolved / totalSubmissions) * 100).toFixed(1)
+                      : "0"}
+                    %
+                  </span>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-3">
-              {stats.map((stat) => {
-                const acceptance = stat.submissions > 0 
+          {/* Difficulty Cards */}
+          <div className="space-y-2 flex-1">
+            {stats.map((stat) => {
+              const acceptance =
+                stat.submissions > 0
                   ? ((stat.count / stat.submissions) * 100).toFixed(1)
                   : "0.0";
 
-                return (
-                  <StatCard
-                    key={stat.difficulty}
-                    difficulty={stat.difficulty}
-                    count={stat.count}
-                    total={totalQuestions[stat.difficulty]}
-                    acceptance={acceptance}
-                    color={getDifficultyColor(stat.difficulty)}
-                    bgColor={getDifficultyBgColor(stat.difficulty)}
-                  />
-                );
-              })}
-            </div>
+              return (
+                <StatCard
+                  key={stat.difficulty}
+                  difficulty={stat.difficulty}
+                  count={stat.count}
+                  total={totalQuestions[stat.difficulty]}
+                  acceptance={acceptance}
+                  color={getDifficultyColor(stat.difficulty)}
+                  bgColor={getDifficultyBgColor(stat.difficulty)}
+                />
+              );
+            })}
           </div>
-
-          <div className="border-t border-primary/10 pt-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">Submissions</span>
-                <span className="font-semibold">{totalSubmissions.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                <span className="text-muted-foreground">Success Rate</span>
-                <span className="font-semibold">
-                  {totalSubmissions > 0 ? ((totalSolved / totalSubmissions) * 100).toFixed(1) : '0'}%
+          {recentSubmissions.length > 0 && (
+            <div className="flex-1 pt-1">
+              <div className="flex items-center gap-2 mb-2">
+                <h4 className="font-semibold text-xs text-foreground">
+                  Recent Submissions
+                </h4>
+                <span className="text-xs text-muted-foreground">
+                  ({recentSubmissions.length} latest)
                 </span>
               </div>
+
+              <div
+                className="max-h-[12rem] flex flex-col gap-y-2 max-sm:max-w-[90vw] max-sm:max-h-[100%-12rem] overflow-y-scroll pr-1"
+                style={{ WebkitOverflowScrolling: "touch" }}
+              >
+                {recentSubmissions.map((submission) => (
+                  <RecentSubmissionCard
+                    key={submission.id}
+                    submission={submission}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
-      </HoverCardContent>
-    </HoverCard>
+          )}
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop: HoverCard */}
+      <div className="max-sm:hidden sm:block">
+        <HoverCard openDelay={200} closeDelay={100}>
+          <HoverCardTrigger asChild>
+            <Button
+              className={cn(
+                "group relative overflow-hidden",
+                "flex gap-2 text-xs rounded-xl font-medium border-2 border-primary/20",
+                "bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5",
+                "hover:border-primary/40 hover:shadow-lg hover:shadow-primary/20",
+                "transition-all duration-300",
+                "text-primary hover:text-primary px-3 py-1.5"
+              )}
+              size="sm"
+              variant="ghost"
+              aria-label="View LeetCode Statistics"
+            >
+              <LeetcodeIcon className="w-4 h-4 transition-transform group-hover:scale-110" />
+              <span className="hidden sm:inline">LeetCode</span>
+              <span className="font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                {totalSolved}
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+            </Button>
+          </HoverCardTrigger>
+          <HoverCardContent
+            align="end"
+            className="w-[600px] p-0 border-2 border-primary/20 shadow-2xl shadow-primary/10 rounded-2xl overflow-hidden"
+            sideOffset={8}
+          >
+            <StatsContent />
+          </HoverCardContent>
+        </HoverCard>
+      </div>
+
+      {/* Mobile: Dialog */}
+      <div className="block sm:hidden">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              className={cn(
+                "group relative overflow-hidden",
+                "flex gap-2 text-xs rounded-xl font-medium border-2 border-primary/20",
+                "bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5",
+                "hover:border-primary/40 hover:shadow-lg hover:shadow-primary/20",
+                "transition-all duration-300",
+                "text-primary hover:text-primary px-4 py-2"
+              )}
+              size="sm"
+              variant="ghost"
+              aria-label="View LeetCode Statistics"
+            >
+              <LeetcodeIcon className="w-4 h-4 transition-transform group-hover:scale-110" />
+              <span className="font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                {totalSolved}
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="w-[95vw] max-w-[380px] h-[calc(100dvh-4rem)] overflow-y-auto p-0 border-2 border-primary/20 shadow-2xl shadow-primary/10 rounded-2xl">
+            <DialogTitle hidden>Leetcode statistics</DialogTitle>
+            <StatsContent />
+          </DialogContent>
+        </Dialog>
+      </div>
+    </>
   );
 };
 
