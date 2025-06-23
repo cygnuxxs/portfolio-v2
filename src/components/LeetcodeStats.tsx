@@ -138,7 +138,7 @@ const LeetcodeStats = ({
               </div>
 
               <div
-                className="max-h-[12rem] flex flex-col gap-y-2 max-sm:max-w-[90vw] max-sm:max-h-[100%-12rem] overflow-y-scroll pr-1"
+                className="max-sm:max-h-[calc(100%-32rem)] h-[19rem] flex flex-col gap-y-2 max-sm:max-w-[90vw] overflow-y-scroll pr-1"
                 style={{ WebkitOverflowScrolling: "touch" }}
               >
                 {recentSubmissions.map((submission) => (
@@ -183,7 +183,7 @@ const LeetcodeStats = ({
           </HoverCardTrigger>
           <HoverCardContent
             align="end"
-            className="w-[600px] p-0 border-2 border-primary/20 shadow-2xl shadow-primary/10 rounded-2xl overflow-hidden"
+            className="max-w-screen w-fit p-0 border-2 border-primary/20 shadow-2xl shadow-primary/10 rounded-2xl overflow-hidden"
             sideOffset={8}
           >
             <StatsContent />
