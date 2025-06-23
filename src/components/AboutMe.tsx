@@ -4,7 +4,6 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ContainerTextFlip } from './ui/container-text-flip'
 import LeetcodeStats from './LeetcodeStats'
-import { Difficulty, RecentSubmission } from '@/actions/actions'
 
 const AboutMe = ({stats, totalAvailable, totalQuestions, recentSubmissions} : {stats : SubmissionStat[], totalAvailable : number, totalQuestions : Record<Difficulty, number>, recentSubmissions : RecentSubmission[]}) => {
   const containerVariants = {
