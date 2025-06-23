@@ -67,89 +67,92 @@ const LeetcodeStats = ({
         </h3>
       </div>
       <div className="flex flex-wrap gap-3 w-full">
-          <div className="text-center flex-1 space-y-2">
-            <CircularProgress
-              percentage={overallProgress}
-              size={60}
-              strokeWidth={6}
-              color="text-primary"
-            />
-            <div>
-              <p className="text-xl sm:text-3xl font-bold text-primary">
-                {totalSolved}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                of {totalAvailable} solved
-              </p>
-            </div>
-
-            {/* Summary Stats */}
-            <div className="border-t border-primary/10 pt-2 sm:pt-4">
-              <div className="flex flex-col gap-1.5 text-xs">
-                <div className="flex justify-between items-center p-1.5 rounded-lg bg-muted/30">
-                  <span className="text-muted-foreground">Submissions</span>
-                  <span className="font-semibold">
-                    {totalSubmissions.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-1.5 rounded-lg bg-muted/30">
-                  <span className="text-muted-foreground">Success Rate</span>
-                  <span className="font-semibold">
-                    {totalSubmissions > 0
-                      ? ((totalSolved / totalSubmissions) * 100).toFixed(1)
-                      : "0"}
-                    %
-                  </span>
-                </div>
-              </div>
-            </div>
+        <div className="text-center flex-1 space-y-2">
+          <CircularProgress
+            percentage={overallProgress}
+            size={60}
+            strokeWidth={6}
+            color="text-primary"
+          />
+          <div>
+            <p className="text-xl sm:text-3xl font-bold text-primary">
+              {totalSolved}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              of {totalAvailable} solved
+            </p>
           </div>
 
-          {/* Difficulty Cards */}
-          <div className="space-y-2 flex-1">
-            {stats.map((stat) => {
-              const acceptance =
-                stat.submissions > 0
-                  ? ((stat.count / stat.submissions) * 100).toFixed(1)
-                  : "0.0";
-
-              return (
-                <StatCard
-                  key={stat.difficulty}
-                  difficulty={stat.difficulty}
-                  count={stat.count}
-                  total={totalQuestions[stat.difficulty]}
-                  acceptance={acceptance}
-                  color={getDifficultyColor(stat.difficulty)}
-                  bgColor={getDifficultyBgColor(stat.difficulty)}
-                />
-              );
-            })}
-          </div>
-          {recentSubmissions.length > 0 && (
-            <div className="flex-1 pt-1">
-              <div className="flex items-center gap-2 mb-2">
-                <h4 className="font-semibold text-xs text-foreground">
-                  Recent Submissions
-                </h4>
-                <span className="text-xs text-muted-foreground">
-                  ({recentSubmissions.length} latest)
+          {/* Summary Stats */}
+          <div className="border-t border-primary/10 pt-2 sm:pt-4">
+            <div className="flex flex-col gap-1.5 text-xs">
+              <div className="flex justify-between items-center p-1.5 rounded-lg bg-muted/30">
+                <span className="text-muted-foreground">Submissions</span>
+                <span className="font-semibold">
+                  {totalSubmissions.toLocaleString()}
                 </span>
               </div>
-
-              <div
-                className="max-sm:max-h-[calc(100%-32rem)] h-[19rem] flex flex-col gap-y-2 max-sm:max-w-[90vw] overflow-y-scroll pr-1"
-                style={{ WebkitOverflowScrolling: "touch" }}
-              >
-                {recentSubmissions.map((submission) => (
-                  <RecentSubmissionCard
-                    key={submission.id}
-                    submission={submission}
-                  />
-                ))}
+              <div className="flex justify-between items-center p-1.5 rounded-lg bg-muted/30">
+                <span className="text-muted-foreground">Success Rate</span>
+                <span className="font-semibold">
+                  {totalSubmissions > 0
+                    ? ((totalSolved / totalSubmissions) * 100).toFixed(1)
+                    : "0"}
+                  %
+                </span>
               </div>
             </div>
-          )}
+          </div>
+        </div>
+
+        {/* Difficulty Cards */}
+        <div className="space-y-2 flex-1">
+          {stats.map((stat) => {
+            const acceptance =
+              stat.submissions > 0
+                ? ((stat.count / stat.submissions) * 100).toFixed(1)
+                : "0.0";
+
+            return (
+              <StatCard
+                key={stat.difficulty}
+                difficulty={stat.difficulty}
+                count={stat.count}
+                total={totalQuestions[stat.difficulty]}
+                acceptance={acceptance}
+                color={getDifficultyColor(stat.difficulty)}
+                bgColor={getDifficultyBgColor(stat.difficulty)}
+              />
+            );
+          })}
+        </div>
+        {recentSubmissions.length > 0 && (
+          <div className="flex-1 pt-1">
+            <div className="flex items-center gap-2 mb-2">
+              <h4 className="font-semibold text-xs text-foreground">
+                Recent Submissions
+              </h4>
+              <span className="text-xs text-muted-foreground">
+                ({recentSubmissions.length} latest)
+              </span>
+            </div>
+
+            <div
+              className="h-[19rem] flex flex-col gap-y-2 max-sm:max-w-[90vw] overflow-y-auto pr-1 scroll-smooth"
+              style={{
+                WebkitOverflowScrolling: "touch",
+                overscrollBehavior: "contain",
+              }}
+            >
+              {recentSubmissions.map((submission) => (
+                <RecentSubmissionCard
+                  key={submission.id}
+                  submission={submission}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
