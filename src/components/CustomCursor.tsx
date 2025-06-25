@@ -78,7 +78,6 @@ const CustomCursor = () => {
     };
   }, []);
 
-  // Common position update logic
   const updatePosition = useCallback((clientX: number, clientY: number) => {
     const newX = clientX;
     const newY = clientY;
@@ -187,7 +186,7 @@ const CustomCursor = () => {
   }, [isMobile, updatePosition]);
 
   // Adjust cursor size for mobile
-  const cursorSize = isMobile ? 32 : 24;
+  const cursorSize = isMobile ? 16 : 12;
   const halfSize = cursorSize / 2;
 
   const mainCursorVariants: Variants = {
@@ -283,7 +282,7 @@ const CustomCursor = () => {
             borderRadius: '50%',
             opacity: Math.max(0, trail.life * (isMobile ? 0.6 : 0.8)),
             boxShadow: `0 0 ${Math.max(0, trail.life) * (isMobile ? 12 : 16)}px var(--primary)`,
-            mixBlendMode: 'screen',
+            // mixBlendMode: 'screen',
             position: 'fixed',
             pointerEvents: 'none',
           }}
@@ -307,7 +306,7 @@ const CustomCursor = () => {
               height: size,
               backgroundColor: 'var(--primary)',
               borderRadius: '50%',
-              mixBlendMode: 'difference',
+              // mixBlendMode: '',
               filter: `blur(${(1 - life) * (isMobile ? 0.8 : 1.2)}px)`,
               boxShadow: `0 0 ${life * (isMobile ? 6 : 8)}px var(--primary)`,
               opacity: life * (isMobile ? 0.4 : 0.5),
@@ -322,7 +321,7 @@ const CustomCursor = () => {
 
       {/* Main cursor */}
       <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
+        className="fixed top-0 left-0 pointer-events-none z-[9999]"
         variants={mainCursorVariants}
         animate={cursorVariant}
         style={{
