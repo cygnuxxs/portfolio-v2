@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import SubmissionDate from "./SubmissionDate";
 
 const RecentSubmissionCard = ({
   submission,
@@ -15,36 +16,6 @@ const RecentSubmissionCard = ({
     if (normalizedStatus.includes("time limit"))
       return "text-yellow-600 bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800/30";
     return "text-gray-600 bg-gray-50 dark:bg-gray-950/20 border-gray-200 dark:border-gray-800/30";
-  };
-
-  const formatTimestamp = (timestamp: string): string => {
-    if (!timestamp || !/^\d+$/.test(timestamp)) return "Recently";
-
-    try {
-      const date = new Date(Number(timestamp) * 1000);
-
-      if (isNaN(date.getTime())) return "Recently";
-
-      const now = new Date("2025-06-22T11:00:00+05:30");
-      const diffMs = now.getTime() - date.getTime();
-
-      if (diffMs < 0) return "Just now";
-
-      const diffSeconds = Math.floor(diffMs / 1000);
-      const diffMinutes = Math.floor(diffSeconds / 60);
-      const diffHours = Math.floor(diffMinutes / 60);
-      const diffDays = Math.floor(diffHours / 24);
-
-      if (diffDays > 0) {
-        return diffDays === 1 ? "Yesterday" : `${diffDays}d ago`;
-      }
-      if (diffHours > 0) return `${diffHours}h ago`;
-      if (diffMinutes > 0) return `${diffMinutes}m ago`;
-      if (diffSeconds >= 10) return `${diffSeconds}s ago`;
-      return "Just now";
-    } catch {
-      return "Recently";
-    }
   };
 
   const getLangBadgeColor = (lang: string) => {
@@ -101,9 +72,7 @@ const RecentSubmissionCard = ({
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground pl-2 pt-1 truncate max-w-[80px] sm:max-w-[100px]">
-        {formatTimestamp(submission.timestamp)}
-      </p>
+      <SubmissionDate timestamp={submission.timestamp} />
     </div>
   );
 };

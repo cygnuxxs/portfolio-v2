@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 import RecentSubmissionCard from "./RecentSubmission";
 import { CircularProgress } from "./Progress";
 import StatCard from "./StatCard";
+import Link from "next/link";
+import { ExternalLink, Code } from "lucide-react";
 
 const LeetcodeStats = ({
   stats = [],
@@ -57,7 +59,7 @@ const LeetcodeStats = ({
   };
 
   const StatsContent = () => (
-    <div className="bg-gradient-to-br from-primary/5 via-background to-primary/5 p-2 sm:p-4 w-full max-w-full overflow-hidden">
+    <div className="bg-gradient-to-br from-primary/5 via-background to-primary/5 p-2 sm:p-4 w-full max-w-full overflow-y-auto">
       <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-6">
         <div className="p-1 sm:p-2 rounded-full bg-primary/10">
           <LeetcodeIcon className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
@@ -66,8 +68,27 @@ const LeetcodeStats = ({
           LeetCode Statistics
         </h3>
       </div>
-      <div className="flex flex-wrap gap-3 w-full">
+      <div className="flex flex-wrap gap-3 w-full overflow-y-auto">
         <div className="text-center flex-1 space-y-2">
+          <div className="space-y-2">
+            <Link
+              href="https://leetcode.com/u/cygnuxxs/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative inline-flex items-center gap-2 p-2 text-xs font-medium text-white bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-lg shadow-lg hover:shadow-xl hover:from-orange-600/30 hover:to-red-600/30 transition-all duration-300 transform hover:scale-105 active:scale-95 mx-auto"
+              aria-label="Visit LeetCode profile"
+            >
+              <Code
+                className={`w-4 h-4 transition-transform group-hover:rotate-12 duration-300`}
+              />
+              <span>Profile</span>
+              <ExternalLink
+                className={`w-3 h-3 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5`}
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-400 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+            </Link>
+          </div>
           <CircularProgress
             percentage={overallProgress}
             size={60}
