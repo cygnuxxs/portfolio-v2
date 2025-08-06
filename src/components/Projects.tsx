@@ -37,7 +37,7 @@ const Projects = () => {
   aria-labelledby="projects-heading"
   className="min-h-[calc(100dvh-5.5rem)] relative flex items-start py-12 justify-center w-full"
 >
-  <GridPattern strokeDasharray="1 2" />
+  <GridPattern strokeDasharray="1 2" className="fill-primary/30 -z-10 stroke-primary/80 [mask-image:radial-gradient(90vw_circle_at_center,var(--muted),transparent)]" />
   <div className="max-w-4xl w-full space-y-4">
     <h1 id="projects-heading" className="text-center font-black text-4xl max-sm:text-2xl">Projects</h1>
     <p className="text-base p-1 max-sm:text-sm text-foreground text-center">Showcasing my passion for innovation through creative and impactful projects</p>

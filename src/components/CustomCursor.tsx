@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useCallback, useState, useRef, useMemo } from "react";
-import { motion, Variants } from "framer-motion";
+import { motion, Variants } from "motion/react";
 import { useCursor } from "../context/CursorContext";
 
 interface MousePosition {
@@ -13,6 +13,7 @@ interface TrailPoint {
   y: number;
   timestamp: number;
   velocity: { x: number; y: number };
+  id: number;
 }
 
 interface PhysicsTrail {
@@ -24,8 +25,67 @@ interface PhysicsTrail {
   id: number;
 }
 
-const MAX_PATH_HISTORY = 20;
-const MAX_PHYSICS_TRAILS = 50;
+class Queue<T> {
+  private items: T[] = [];
+  private head = 0;
+  private tail = 0;
+  private maxSize: number;
+
+  constructor(maxSize: number) {
+    this.maxSize = maxSize;
+    this.items = new Array(maxSize);
+  }
+
+  enqueue(item: T): void {
+    if (this.size() >= this.maxSize) {
+      this.dequeue();
+    }
+    this.items[this.tail] = item;
+    this.tail = (this.tail + 1) % this.maxSize;
+  }
+
+  dequeue(): T | undefined {
+    if (this.isEmpty()) return undefined;
+    const item = this.items[this.head];
+    this.head = (this.head + 1) % this.maxSize;
+    return item;
+  }
+
+  size(): number {
+    return this.tail >= this.head
+      ? this.tail - this.head
+      : this.maxSize - this.head + this.tail;
+  }
+
+  isEmpty(): boolean {
+    return this.head === this.tail;
+  }
+
+  toArray(): T[] {
+    if (this.isEmpty()) return [];
+
+    const result: T[] = [];
+    let current = this.head;
+
+    while (current !== this.tail) {
+      if (this.items[current] !== undefined) {
+        result.push(this.items[current]);
+      }
+      current = (current + 1) % this.maxSize;
+    }
+
+    return result;
+  }
+
+  clear(): void {
+    this.head = 0;
+    this.tail = 0;
+  }
+}
+
+const MAX_PATH_HISTORY = 30;
+const MAX_PHYSICS_TRAILS = 30;
+const TRAIL_CLEANUP_INTERVAL = 1000; // ms
 
 const CustomCursor = () => {
   const { cursorVariant } = useCursor();
@@ -34,22 +94,32 @@ const CustomCursor = () => {
     y: 0,
   });
   const [isMoving, setIsMoving] = useState(false);
-  const [isTouching, setIsTouching] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Use queues for better memory management
+  const pathQueueRef = useRef<Queue<TrailPoint>>(new Queue(MAX_PATH_HISTORY));
+  const physicsQueueRef = useRef<Queue<PhysicsTrail>>(
+    new Queue(MAX_PHYSICS_TRAILS)
+  );
   const [pathHistory, setPathHistory] = useState<TrailPoint[]>([]);
   const [physicsTrails, setPhysicsTrails] = useState<PhysicsTrail[]>([]);
-  const [isMobile, setIsMobile] = useState(false);
 
   const lastPositionRef = useRef<MousePosition>({ x: 0, y: 0 });
   const trailIdRef = useRef<number>(0);
   const animationFrameRef = useRef<number>(0);
+  const cleanupIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Detect if device is mobile/touch
   useEffect(() => {
     const checkMobile = () => {
       const isTouchDevice =
         "ontouchstart" in window || navigator.maxTouchPoints > 0;
-      const isSmallScreen = window.matchMedia("(max-width: 480px)").matches;
-      setIsMobile(isTouchDevice || isSmallScreen);
+      const isSmallScreen = window.matchMedia("(max-width: 768px)").matches;
+      const isLowPerformance = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      setIsMobile(isTouchDevice || isSmallScreen || isLowPerformance);
     };
 
     checkMobile();
@@ -57,22 +127,68 @@ const CustomCursor = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Physics simulation for shooting star trails
+  // Cleanup old trails periodically
+  useEffect(() => {
+    const cleanup = () => {
+      const now = Date.now();
+
+      // Clean up path history
+      const currentPaths = pathQueueRef.current.toArray();
+      const validPaths = currentPaths.filter(
+        (point) => now - point.timestamp < 1500 // Keep trails for 1.5 seconds
+      );
+
+      if (validPaths.length !== currentPaths.length) {
+        pathQueueRef.current.clear();
+        validPaths.forEach((point) => pathQueueRef.current.enqueue(point));
+        setPathHistory(validPaths);
+      }
+
+      // Clean up physics trails
+      const currentPhysics = physicsQueueRef.current.toArray();
+      const validPhysics = currentPhysics.filter((trail) => trail.life > 0);
+
+      if (validPhysics.length !== currentPhysics.length) {
+        physicsQueueRef.current.clear();
+        validPhysics.forEach((trail) => physicsQueueRef.current.enqueue(trail));
+        setPhysicsTrails(validPhysics);
+      }
+    };
+
+    cleanupIntervalRef.current = setInterval(cleanup, TRAIL_CLEANUP_INTERVAL);
+
+    return () => {
+      if (cleanupIntervalRef.current) {
+        clearInterval(cleanupIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Optimized physics simulation
   useEffect(() => {
     const updatePhysics = () => {
-      setPhysicsTrails((prev) =>
-        prev
-          .map((trail) => ({
-            ...trail,
-            x: trail.x + trail.vx,
-            y: trail.y + trail.vy,
-            vx: trail.vx * 0.98, // Air resistance
-            vy: trail.vy * 0.98 + 0.1, // Gravity
-            life: trail.life - 0.02,
-          }))
-          .filter((trail) => trail.life > 0)
-          .slice(-MAX_PHYSICS_TRAILS)
-      );
+      const currentTrails = physicsQueueRef.current.toArray();
+
+      if (currentTrails.length === 0) {
+        animationFrameRef.current = requestAnimationFrame(updatePhysics);
+        return;
+      }
+
+      const updatedTrails = currentTrails
+        .map((trail) => ({
+          ...trail,
+          x: trail.x + trail.vx,
+          y: trail.y + trail.vy,
+          vx: trail.vx * 0.98, // Air resistance
+          vy: trail.vy * 0.98 + 0.1, // Gravity
+          life: trail.life - 0.025,
+        }))
+        .filter((trail) => trail.life > 0);
+
+      // Update queue
+      physicsQueueRef.current.clear();
+      updatedTrails.forEach((trail) => physicsQueueRef.current.enqueue(trail));
+      setPhysicsTrails(updatedTrails);
 
       animationFrameRef.current = requestAnimationFrame(updatePhysics);
     };
@@ -86,116 +202,86 @@ const CustomCursor = () => {
     };
   }, []);
 
-  const updatePosition = useCallback(
-    (clientX: number, clientY: number) => {
-      const newX = clientX;
-      const newY = clientY;
-      const now = Date.now();
+  const updatePosition = useCallback((clientX: number, clientY: number) => {
+    const newX = clientX;
+    const newY = clientY;
+    const now = Date.now();
 
-      const velocity = {
-        x: newX - lastPositionRef.current.x,
-        y: newY - lastPositionRef.current.y,
-      };
+    const velocity = {
+      x: newX - lastPositionRef.current.x,
+      y: newY - lastPositionRef.current.y,
+    };
 
-      const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2);
+    const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2);
 
-      const newPoint: TrailPoint = {
-        x: newX,
-        y: newY,
-        timestamp: now,
-        velocity,
-      };
+    // Add to path history queue
+    const newPoint: TrailPoint = {
+      x: newX,
+      y: newY,
+      timestamp: now,
+      velocity,
+      id: trailIdRef.current++,
+    };
 
-      setPathHistory((prev) => [...prev, newPoint].slice(-MAX_PATH_HISTORY));
+    pathQueueRef.current.enqueue(newPoint);
+    setPathHistory(pathQueueRef.current.toArray());
 
-      const speedThreshold = isMobile ? 3 : 5;
-      if (speed > speedThreshold) {
-        const numTrails = Math.min(
-          Math.floor(speed / (isMobile ? 8 : 10)),
-          isMobile ? 3 : 5
-        );
-        const newPhysicsTrails: PhysicsTrail[] = [];
+    // Create physics trails based on speed
+    const speedThreshold = 5;
+    if (speed > speedThreshold) {
+      const numTrails = Math.min(Math.floor(speed / 12), 3);
 
-        for (let i = 0; i < numTrails; i++) {
-          newPhysicsTrails.push({
-            x: newX + (Math.random() - 0.5) * (isMobile ? 8 : 10),
-            y: newY + (Math.random() - 0.5) * (isMobile ? 8 : 10),
-            vx: velocity.x * 0.1 + (Math.random() - 0.5) * 2,
-            vy: velocity.y * 0.1 + (Math.random() - 0.5) * 2,
-            life: 1,
-            id: trailIdRef.current++,
-          });
-        }
+      for (let i = 0; i < numTrails; i++) {
+        const newPhysicsTrail: PhysicsTrail = {
+          x: newX + (Math.random() - 0.5) * 8,
+          y: newY + (Math.random() - 0.5) * 8,
+          vx: velocity.x * 0.08 + (Math.random() - 0.5) * 1.5,
+          vy: velocity.y * 0.08 + (Math.random() - 0.5) * 1.5,
+          life: 1,
+          id: trailIdRef.current++,
+        };
 
-        setPhysicsTrails((prev) =>
-          [...prev, ...newPhysicsTrails].slice(-MAX_PHYSICS_TRAILS)
-        );
+        physicsQueueRef.current.enqueue(newPhysicsTrail);
       }
 
-      setMousePosition({ x: newX, y: newY });
-      setIsMoving(true);
+      setPhysicsTrails(physicsQueueRef.current.toArray());
+    }
 
-      lastPositionRef.current = { x: newX, y: newY };
-    },
-    [isMobile]
-  );
+    setMousePosition({ x: newX, y: newY });
+    setIsMoving(true);
+    lastPositionRef.current = { x: newX, y: newY };
+  }, []);
 
+  // Mouse event handlers
   useEffect(() => {
     let timeout: NodeJS.Timeout;
 
     const mouseMove = (e: MouseEvent) => {
-      if (!isMobile) {
-        updatePosition(e.clientX, e.clientY);
-        clearTimeout(timeout);
-        timeout = setTimeout(() => setIsMoving(false), 150);
-      }
+      updatePosition(e.clientX, e.clientY);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => setIsMoving(false), 150);
     };
 
-    const touchStart = (e: TouchEvent) => {
-      if (isMobile) {
-        setIsTouching(true);
-        const touch = e.touches[0];
-        updatePosition(touch.clientX, touch.clientY);
-        clearTimeout(timeout);
-        timeout = setTimeout(() => setIsMoving(false), 150);
-      }
+    const mouseLeave = () => {
+      setIsMoving(false);
+      // Clear trails when mouse leaves
+      pathQueueRef.current.clear();
+      physicsQueueRef.current.clear();
+      setPathHistory([]);
+      setPhysicsTrails([]);
     };
 
-    const touchMove = (e: TouchEvent) => {
-      if (isMobile) {
-        const touch = e.touches[0];
-        updatePosition(touch.clientX, touch.clientY);
-        clearTimeout(timeout);
-        timeout = setTimeout(() => setIsMoving(false), 150);
-      }
-    };
-
-    const touchEnd = () => {
-      if (isMobile) {
-        setIsTouching(false);
-        clearTimeout(timeout);
-        timeout = setTimeout(() => setIsMoving(false), 300);
-      }
-    };
-
-    if (!isMobile) {
-      window.addEventListener("mousemove", mouseMove);
-    } else {
-      window.addEventListener("touchstart", touchStart, { passive: false });
-      window.addEventListener("touchmove", touchMove, { passive: false });
-      window.addEventListener("touchend", touchEnd);
-    }
+    window.addEventListener("mousemove", mouseMove);
+    document.addEventListener("mouseleave", mouseLeave);
 
     return () => {
       window.removeEventListener("mousemove", mouseMove);
-      window.removeEventListener("touchstart", touchStart);
-      window.removeEventListener("touchmove", touchMove);
-      window.removeEventListener("touchend", touchEnd);
+      document.removeEventListener("mouseleave", mouseLeave);
       clearTimeout(timeout);
     };
-  }, [isMobile, updatePosition]);
+  }, [updatePosition]);
 
-  const cursorSize = isMobile ? 16 : 12;
+  const cursorSize = 12;
   const halfSize = cursorSize / 2;
 
   // Memoize rotation calculation
@@ -214,7 +300,7 @@ const CustomCursor = () => {
       x: mousePosition.x - halfSize,
       y: mousePosition.y - halfSize,
       scale: 1,
-      opacity: isMobile ? (isTouching ? 0.8 : 0.4) : 0.9,
+      opacity: 0.9,
       rotate: 0,
       borderRadius: "50%",
       transition: {
@@ -232,10 +318,10 @@ const CustomCursor = () => {
       },
     },
     text: {
-      x: mousePosition.x - (isMobile ? 24 : 20),
-      y: mousePosition.y - (isMobile ? 24 : 20),
-      scale: isMobile ? 1.4 : 1.8,
-      opacity: isMobile ? (isTouching ? 0.7 : 0.3) : 0.6,
+      x: mousePosition.x - 20,
+      y: mousePosition.y - 20,
+      scale: 1.8,
+      opacity: 0.6,
       rotate: textRotation,
       borderRadius: "30%",
       transition: {
@@ -253,10 +339,10 @@ const CustomCursor = () => {
       },
     },
     hover: {
-      x: mousePosition.x - (isMobile ? 20 : 16),
-      y: mousePosition.y - (isMobile ? 20 : 16),
-      scale: isMobile ? 1.2 : 1.4,
-      opacity: isMobile ? (isTouching ? 0.9 : 0.5) : 0.8,
+      x: mousePosition.x - 16,
+      y: mousePosition.y - 16,
+      scale: 1.4,
+      opacity: 0.8,
       rotate: 0,
       borderRadius: "20%",
       transition: {
@@ -274,9 +360,9 @@ const CustomCursor = () => {
       },
     },
     click: {
-      x: mousePosition.x - (isMobile ? 12 : 8),
-      y: mousePosition.y - (isMobile ? 12 : 8),
-      scale: isMobile ? 0.8 : 0.6,
+      x: mousePosition.x - 8,
+      y: mousePosition.y - 8,
+      scale: 0.6,
       opacity: 1,
       rotate: 45,
       borderRadius: "10%",
@@ -302,7 +388,8 @@ const CustomCursor = () => {
 
   return (
     <>
-      {physicsTrails.slice(-20).map((trail) => (
+      {/* Physics trails */}
+      {physicsTrails.slice(-15).map((trail) => (
         <motion.div
           key={trail.id}
           className="fixed top-0 left-0 pointer-events-none z-[9995]"
@@ -313,9 +400,9 @@ const CustomCursor = () => {
             height: 6,
             backgroundColor: "var(--primary, #00bcd4)",
             borderRadius: "50%",
-            opacity: Math.max(0, trail.life * 0.8),
+            opacity: Math.max(0, trail.life * 0.7),
             boxShadow: `0 0 ${
-              Math.max(0, trail.life) * 16
+              Math.max(0, trail.life) * 12
             }px var(--primary, #00bcd4)`,
             position: "fixed",
             pointerEvents: "none",
@@ -323,34 +410,35 @@ const CustomCursor = () => {
         />
       ))}
 
-      {pathHistory.slice(-10).map((point, index) => {
+      {/* Path history trails */}
+      {pathHistory.slice(-8).map((point, index) => {
         const age = (Date.now() - point.timestamp) / 1000;
-        const life = Math.max(0, 1 - age / 1.2);
-        const size = 3 + index * 0.25;
+        const life = Math.max(0, 1 - age / 1.0);
+        const size = 3 + index * 0.2;
 
         return (
           <motion.div
-            key={`${point.timestamp}-${index}`}
+            key={point.id}
             className="fixed top-0 left-0 pointer-events-none z-[9996]"
             style={{
               left: point.x - size / 2,
               top: point.y - size / 2,
               width: size,
               height: size,
-              backgroundColor: "var(--primary)",
+              backgroundColor: "var(--primary, #00bcd4)",
               borderRadius: "50%",
-              filter: `blur(${(1 - life) * 1.2}px)`,
-              boxShadow: `0 0 ${life * 8}px var(--primary, #00bcd4)`,
-              opacity: life * 0.5,
+              filter: `blur(${(1 - life) * 1}px)`,
+              boxShadow: `0 0 ${life * 6}px var(--primary, #00bcd4)`,
+              opacity: life * 0.4,
               position: "fixed",
               pointerEvents: "none",
-              transform: `scale(${life * 1.1})`,
-              transition: "opacity 0.2s, transform 0.2s, left 0s, top 0s",
+              transform: `scale(${life})`,
             }}
           />
         );
       })}
 
+      {/* Main cursor */}
       <motion.div
         className="fixed top-0 left-0 pointer-events-none z-[9999]"
         variants={mainCursorVariants}

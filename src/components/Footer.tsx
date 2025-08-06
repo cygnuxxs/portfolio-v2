@@ -35,7 +35,7 @@ const Footer: React.FC<{ resumeLink: string }> = ({ resumeLink }) => {
           viewport={{ amount: 0.5 }}
           className="font-dancing-script text-xl max-sm:text-base max-sm:font-normal font-bold mt-2"
         >
-          &quot; Talent is the Skill to prove One&apos;s Own Ability. &quot;
+          &quot; Talent is the Skill to prove One&apos;s Own Ability.&quot;
         </motion.blockquote>
       </section>
 
