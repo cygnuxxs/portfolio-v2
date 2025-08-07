@@ -13,7 +13,7 @@ const AboutMe = ({stats, totalAvailable, totalQuestions, recentSubmissions} : {s
       transition: {
         staggerChildren: 0.2,
         delayChildren: 0.1
-      }
+      },
     }
   }
 
@@ -49,7 +49,7 @@ const AboutMe = ({stats, totalAvailable, totalQuestions, recentSubmissions} : {s
           width={300}
           height={300}
           sizes="(max-width: 768px) 100vw, 300px"
-          className="object-cover grayscale hover:grayscale-0 transition-all duration-500 rounded-full max-sm:p-4"
+          className="object-cover transition-all duration-500 rounded-full max-sm:p-4"
           priority
         />
 
